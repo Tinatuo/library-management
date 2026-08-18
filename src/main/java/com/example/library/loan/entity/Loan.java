@@ -1,6 +1,7 @@
 ﻿package com.example.library.loan.entity;
 
 import com.example.library.book.entity.Book;
+import com.example.library.common.entity.BaseEntity;
 import com.example.library.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Loan {
+public class Loan extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
