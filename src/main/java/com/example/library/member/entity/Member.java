@@ -1,4 +1,4 @@
-﻿package com.example.library.member.entity;
+package com.example.library.member.entity;
 
 import com.example.library.common.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -26,7 +26,6 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String fullName;
 
-    @email
     @Column(nullable = false, unique = true)
     private String email;
 

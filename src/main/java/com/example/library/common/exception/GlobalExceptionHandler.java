@@ -1,4 +1,4 @@
-﻿package com.example.library.common.exception;
+package com.example.library.common.exception;
 
 import com.example.library.common.dto.ApiError;
 import jakarta.servlet.http.HttpServletRequest;

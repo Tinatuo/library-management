@@ -1,4 +1,4 @@
-﻿package com.example.library.book.entity;
+package com.example.library.book.entity;
 
 import com.example.library.common.entity.BaseEntity;
 import jakarta.persistence.*;

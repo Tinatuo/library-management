@@ -1,4 +1,4 @@
-﻿package com.example.library.loan.entity;
+package com.example.library.loan.entity;
 
 public enum LoanStatus {
     ACTIVE,

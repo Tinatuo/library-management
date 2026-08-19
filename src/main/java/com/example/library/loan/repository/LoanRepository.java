@@ -1,4 +1,4 @@
-﻿package com.example.library.loan.repository;
+package com.example.library.loan.repository;
 
 import com.example.library.loan.entity.Loan;
 import com.example.library.loan.entity.LoanStatus;

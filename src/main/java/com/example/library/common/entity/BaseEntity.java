@@ -1,4 +1,4 @@
-﻿package com.example.library.common.entity;
+package com.example.library.common.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;

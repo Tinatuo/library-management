@@ -1,4 +1,4 @@
-﻿package com.example.library.book.entity;
+package com.example.library.book.entity;
 
 public enum BookStatus {
     AVAILABLE,
