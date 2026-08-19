@@ -42,6 +42,11 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public Member getMemberEntityById(Long id) {
+        return findMemberOrThrow(id);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<MemberResponseDto> getAllMembers() {
         return memberRepository.findAll()
@@ -63,6 +68,11 @@ public class MemberServiceImpl implements MemberService {
         memberMapper.updateEntityFromDto(requestDto, member);
         Member updatedMember = memberRepository.save(member);
         return memberMapper.toResponseDto(updatedMember);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return memberRepository.existsById(id);
     }
 
     private Member findMemberOrThrow(Long id) {

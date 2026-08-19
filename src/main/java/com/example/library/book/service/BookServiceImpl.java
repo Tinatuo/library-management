@@ -3,6 +3,7 @@ package com.example.library.book.service;
 import com.example.library.book.dto.BookRequestDto;
 import com.example.library.book.dto.BookResponseDto;
 import com.example.library.book.entity.Book;
+import com.example.library.book.entity.BookStatus;
 import com.example.library.book.mapper.BookMapper;
 import com.example.library.common.exception.DuplicateResourceException;
 import com.example.library.common.exception.ResourceNotFoundException;
@@ -69,6 +70,30 @@ public class BookServiceImpl implements BookService {
     public void deleteBook(Long id) {
         Book book = findBookOrThrow(id);
         bookRepository.delete(book);
+    }
+
+    @Override
+    public Book getBookEntityById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Book with ID " + id + " was not found"
+                        )
+                );
+    }
+
+    @Override
+    public void markAsBorrowed(Long id) {
+        Book book = getBookEntityById(id);
+        book.setStatus(BookStatus.BORROWED);
+        bookRepository.save(book);
+    }
+
+    @Override
+    public void markAsAvailable(Long id) {
+        Book book = getBookEntityById(id);
+        book.setStatus(BookStatus.AVAILABLE);
+        bookRepository.save(book);
     }
 
     private Book findBookOrThrow(Long id) {

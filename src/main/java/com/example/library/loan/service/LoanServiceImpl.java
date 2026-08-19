@@ -2,7 +2,7 @@ package com.example.library.loan.service;
 
 import com.example.library.book.entity.Book;
 import com.example.library.book.entity.BookStatus;
-import com.example.library.book.repository.BookRepository;
+import com.example.library.book.service.BookService;
 import com.example.library.common.exception.BusinessRuleViolationException;
 import com.example.library.common.exception.ResourceNotFoundException;
 import com.example.library.loan.dto.LoanRequestDto;
@@ -12,7 +12,7 @@ import com.example.library.loan.entity.LoanStatus;
 import com.example.library.loan.mapper.LoanMapper;
 import com.example.library.loan.repository.LoanRepository;
 import com.example.library.member.entity.Member;
-import com.example.library.member.repository.MemberRepository;
+import com.example.library.member.service.MemberService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,27 +26,25 @@ public class LoanServiceImpl implements LoanService {
     private static final int LOAN_PERIOD_DAYS = 14;
 
     private final LoanRepository loanRepository;
-    private final BookRepository bookRepository;
-    private final MemberRepository memberRepository;
+    private final MemberService memberService;
+    private final BookService bookService;
     private final LoanMapper loanMapper;
 
     public LoanServiceImpl(LoanRepository loanRepository,
-                           BookRepository bookRepository,
-                           MemberRepository memberRepository,
+                           MemberService memberService,
+                           BookService bookService,
                            LoanMapper loanMapper) {
         this.loanRepository = loanRepository;
-        this.bookRepository = bookRepository;
-        this.memberRepository = memberRepository;
+        this.memberService = memberService;
+        this.bookService = bookService;
         this.loanMapper = loanMapper;
     }
 
     @Override
     public LoanResponseDto borrowBook(LoanRequestDto requestDto) {
-        Book book = bookRepository.findById(requestDto.getBookId())
-                .orElseThrow(() -> new ResourceNotFoundException("Book with ID " + requestDto.getBookId() + " was not found"));
+        Book book = bookService.getBookEntityById(requestDto.getBookId());
 
-        Member member = memberRepository.findById(requestDto.getMemberId())
-                .orElseThrow(() -> new ResourceNotFoundException("Member with ID " + requestDto.getMemberId() + " was not found"));
+        Member member = memberService.getMemberEntityById(requestDto.getMemberId());
 
         if (member.isMembershipExpired()) {
             throw new BusinessRuleViolationException("This member's membership has expired, so they cannot borrow books");
@@ -69,8 +67,7 @@ public class LoanServiceImpl implements LoanService {
                 .status(LoanStatus.ACTIVE)
                 .build();
 
-        book.setStatus(BookStatus.BORROWED);
-        bookRepository.save(book);
+        bookService.markAsBorrowed(book.getId());
 
         Loan savedLoan = loanRepository.save(loan);
         return loanMapper.toResponseDto(savedLoan);
@@ -89,8 +86,7 @@ public class LoanServiceImpl implements LoanService {
         loan.setStatus(LoanStatus.RETURNED);
 
         Book book = loan.getBook();
-        book.setStatus(BookStatus.AVAILABLE);
-        bookRepository.save(book);
+        bookService.markAsAvailable(book.getId());
 
         Loan updatedLoan = loanRepository.save(loan);
         return loanMapper.toResponseDto(updatedLoan);
@@ -116,7 +112,7 @@ public class LoanServiceImpl implements LoanService {
     @Override
     @Transactional(readOnly = true)
     public List<LoanResponseDto> getLoansByMember(Long memberId) {
-        if (!memberRepository.existsById(memberId)) {
+        if (!memberService.existsById(memberId)) {
             throw new ResourceNotFoundException("Member with ID " + memberId + " was not found");
         }
         return loanRepository.findByMemberId(memberId)
