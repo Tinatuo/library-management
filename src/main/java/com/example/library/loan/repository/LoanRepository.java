@@ -2,6 +2,7 @@ package com.example.library.loan.repository;
 
 import com.example.library.loan.entity.Loan;
 import com.example.library.loan.entity.LoanStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -9,9 +10,11 @@ import java.util.Optional;
 
 public interface LoanRepository extends JpaRepository<Loan, Long> {
 
-    List<Loan> findByMemberId(Long memberId);
+    @EntityGraph(attributePaths = {"book", "member"})
+    List<Loan> findAll();
 
-    Optional<Loan> findByBookIdAndStatus(Long bookId, LoanStatus status);
+    @EntityGraph(attributePaths = {"book", "member"})
+    List<Loan> findByMemberId(Long memberId);
 
     boolean existsByBookIdAndMemberIdAndStatus(Long bookId, Long memberId, LoanStatus status);
 }

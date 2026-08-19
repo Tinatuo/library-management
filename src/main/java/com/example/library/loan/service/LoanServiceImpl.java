@@ -109,7 +109,7 @@ public class LoanServiceImpl implements LoanService {
     public List<LoanResponseDto> getAllLoans() {
         return loanRepository.findAll()
                 .stream()
-                .map(loan -> loanMapper.toResponseDto(loan))
+                .map(loanMapper::toResponseDto)
                 .toList();
     }
 
@@ -121,7 +121,7 @@ public class LoanServiceImpl implements LoanService {
         }
         return loanRepository.findByMemberId(memberId)
                 .stream()
-                .map(loan -> loanMapper.toResponseDto(loan))
+                .map(loanMapper::toResponseDto)
                 .toList();
     }
 }
