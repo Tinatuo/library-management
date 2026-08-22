@@ -44,4 +44,8 @@ public class Loan extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LoanStatus status;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer renewalCount = 0;
 }

@@ -11,6 +11,8 @@ public interface LoanService {
 
     LoanResponseDto returnBook(Long loanId);
 
+    LoanResponseDto renewLoan(Long loanId);
+
     LoanResponseDto getLoanById(Long id);
 
     List<LoanResponseDto> getAllLoans();

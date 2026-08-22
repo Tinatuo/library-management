@@ -13,6 +13,10 @@ import com.example.library.loan.mapper.LoanMapper;
 import com.example.library.loan.repository.LoanRepository;
 import com.example.library.member.entity.Member;
 import com.example.library.member.service.MemberService;
+import com.example.library.reservation.service.ReservationService;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +25,8 @@ import java.util.List;
 
 @Service
 @Transactional
+@Getter
+@Setter
 public class LoanServiceImpl implements LoanService {
 
     private static final int LOAN_PERIOD_DAYS = 14;
@@ -29,15 +35,24 @@ public class LoanServiceImpl implements LoanService {
     private final MemberService memberService;
     private final BookService bookService;
     private final LoanMapper loanMapper;
+    private final int maxRenewalCount;
+    private final int renewalExtensionDays;
+    private final ReservationService reservationService;
 
     public LoanServiceImpl(LoanRepository loanRepository,
                            MemberService memberService,
                            BookService bookService,
-                           LoanMapper loanMapper) {
+                           LoanMapper loanMapper,
+                           @Value("2") int maxRenewalCount,
+                           @Value("14") int renewalExtensionDays,
+                           ReservationService reservationService) {
         this.loanRepository = loanRepository;
         this.memberService = memberService;
         this.bookService = bookService;
         this.loanMapper = loanMapper;
+        this.maxRenewalCount = maxRenewalCount;
+        this.renewalExtensionDays = renewalExtensionDays;
+        this.reservationService = reservationService;
     }
 
     @Override
@@ -108,6 +123,41 @@ public class LoanServiceImpl implements LoanService {
                 .map(loanMapper::toResponseDto)
                 .toList();
     }
+
+
+    @Override
+    public LoanResponseDto renewLoan(Long loanId) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new ResourceNotFoundException("Loan with ID " + loanId + " was not found"));
+
+        if (loan.getStatus() != LoanStatus.ACTIVE) {
+            throw new BusinessRuleViolationException("Only active (not yet returned) loans can be renewed");
+        }
+
+        if (loan.getMember().isMembershipExpired()) {
+            throw new BusinessRuleViolationException("This member's membership has expired, so they cannot renew loans");
+        }
+
+        LocalDate today = LocalDate.now();
+        if (today.isAfter(loan.getDueDate())) {
+            throw new BusinessRuleViolationException("This loan is already overdue; renewal must be requested before the due date");
+        }
+
+        if (loan.getRenewalCount() >= maxRenewalCount) {
+            throw new BusinessRuleViolationException("This loan has already reached the maximum number of renewals (" + maxRenewalCount + ")");
+        }
+
+        if (reservationService.hasActiveReservation(loan.getBook().getId())) {
+            throw new BusinessRuleViolationException("This book has been reserved by another member and cannot be renewed");
+        }
+
+        loan.setDueDate(loan.getDueDate().plusDays(renewalExtensionDays));
+        loan.setRenewalCount(loan.getRenewalCount() + 1);
+
+        Loan renewedLoan = loanRepository.save(loan);
+        return loanMapper.toResponseDto(renewedLoan);
+    }
+
 
     @Override
     @Transactional(readOnly = true)
