@@ -12,8 +12,10 @@ import com.example.library.reservation.entity.Reservation;
 import com.example.library.reservation.entity.ReservationStatus;
 import com.example.library.reservation.mapper.ReservationMapper;
 import com.example.library.reservation.repository.ReservationRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,36 +73,104 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public ReservationResponseDto cancelReservation(Long reservationId) {
-        return null;
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation with ID " + reservationId + " was not found"));
+
+        if (reservation.getStatus() == ReservationStatus.FULFILLED) {
+            throw new BusinessRuleViolationException("This reservation has already been fulfilled and cannot be cancelled");
+        }
+        if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+            throw new BusinessRuleViolationException("This reservation has already been cancelled");
+        }
+
+        boolean wasReady = reservation.getStatus() == ReservationStatus.READY;
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        Reservation cancelledReservation = reservationRepository.save(reservation);
+
+        if (wasReady) {
+            Book book = cancelledReservation.getBook();
+            Optional<Reservation> next = promoteNextInQueue(book);
+            if (next.isEmpty()) {
+                bookService.markAsAvailable(book.getId());
+            }
+        }
+
+        return reservationMapper.toResponseDto(cancelledReservation, null);
     }
 
+
     @Override
+    @Transactional(readOnly = true)
     public List<ReservationResponseDto> getReservationsByMember(Long memberId) {
-        return List.of();
+        if (memberService.getMemberById(memberId)==null) {
+            throw new ResourceNotFoundException("Member with ID " + memberId + " was not found");
+        }
+        return reservationRepository.findByMemberId(memberId)
+                .stream()
+                .map(r -> reservationMapper.toResponseDto(r, resolveQueuePosition(r)))
+                .toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ReservationResponseDto> getQueueForBook(Long bookId) {
-        return List.of();
+        List<Reservation> waiting = reservationRepository.findByBookIdAndStatusOrderByReservationDateAsc(bookId, ReservationStatus.WAITING);
+        List<Reservation> ready = reservationRepository.findByBookIdAndStatusOrderByReservationDateAsc(bookId, ReservationStatus.READY);
+
+        List<ReservationResponseDto> queue = new ArrayList<>();
+        for (Reservation r : ready) {
+            queue.add(reservationMapper.toResponseDto(r, 0));
+        }
+        for (int i = 0; i < waiting.size(); i++) {
+            queue.add(reservationMapper.toResponseDto(waiting.get(i), i + 1));
+        }
+        return queue;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean hasActiveReservation(Long bookId) {
-        return false;
+        return reservationRepository.existsByBookIdAndStatusIn(bookId, List.of(WAITING,READY));
     }
 
     @Override
     public Optional<Reservation> promoteNextInQueue(Book book) {
-        return Optional.empty();
+        Optional<Reservation> nextReservation = reservationRepository
+                .findFirstByBookIdAndStatusOrderByReservationDateAsc(book.getId(), ReservationStatus.WAITING);
+
+        nextReservation.ifPresent(reservation -> {
+            reservation.setStatus(ReservationStatus.READY);
+            reservationRepository.save(reservation);
+        });
+
+        return nextReservation;
     }
 
     @Override
     public void fulfillReservation(Long bookId, Long memberId) {
+        Reservation reservation = reservationRepository
+                .findByBookIdAndMemberIdAndStatus(bookId, memberId, ReservationStatus.READY)
+                .orElseThrow(() -> new ResourceNotFoundException("No ready reservation was found for this member and book"));
 
+        reservation.setStatus(ReservationStatus.FULFILLED);
+        reservationRepository.save(reservation);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean hasReadyReservation(Long bookId, Long memberId) {
-        return false;
+        return reservationRepository.findByBookIdAndMemberIdAndStatus(bookId, memberId, ReservationStatus.READY).isPresent();
+    }
+
+    private Integer resolveQueuePosition(Reservation reservation) {
+        if (reservation.getStatus() == ReservationStatus.READY) {
+            return 0;
+        }
+        if (reservation.getStatus() != ReservationStatus.WAITING) {
+            return null;
+        }
+        List<Reservation> waiting = reservationRepository
+                .findByBookIdAndStatusOrderByReservationDateAsc(reservation.getBook().getId(), ReservationStatus.WAITING);
+        return waiting.indexOf(reservation) + 1;
     }
 }
