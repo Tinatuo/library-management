@@ -10,7 +10,6 @@ import java.util.Optional;
 
 public interface ReservationService {
 
-
     ReservationResponseDto reserveBook(Long bookId, Long memberId);
 
     ReservationResponseDto cancelReservation(Long reservationId);

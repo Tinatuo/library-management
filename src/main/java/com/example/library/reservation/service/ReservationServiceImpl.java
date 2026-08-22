@@ -12,6 +12,7 @@ import com.example.library.reservation.entity.Reservation;
 import com.example.library.reservation.entity.ReservationStatus;
 import com.example.library.reservation.mapper.ReservationMapper;
 import com.example.library.reservation.repository.ReservationRepository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,9 @@ import java.util.Optional;
 import static com.example.library.reservation.entity.ReservationStatus.READY;
 import static com.example.library.reservation.entity.ReservationStatus.WAITING;
 
+
+@Transactional
+@Service
 public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
