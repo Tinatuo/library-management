@@ -1,4 +1,4 @@
-﻿package com.example.library.fine.entity;
+package com.example.library.fine.entity;
 
 public enum FineStatus {
     PAID,

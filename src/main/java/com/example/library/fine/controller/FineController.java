@@ -1,4 +1,4 @@
-﻿package com.example.library.fine.controller;
+package com.example.library.fine.controller;
 
 import com.example.library.fine.dto.FineResponseDto;
 import com.example.library.fine.dto.FineSummaryDto;

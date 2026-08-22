@@ -1,4 +1,4 @@
-﻿package com.example.library.fine.repository;
+package com.example.library.fine.repository;
 
 import com.example.library.fine.entity.Fine;
 import com.example.library.fine.entity.FineStatus;

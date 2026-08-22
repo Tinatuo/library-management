@@ -1,4 +1,4 @@
-﻿package com.example.library.fine.entity;
+package com.example.library.fine.entity;
 
 import com.example.library.common.entity.BaseEntity;
 import com.example.library.loan.entity.Loan;

@@ -1,4 +1,4 @@
-﻿package com.example.library.fine.service;
+package com.example.library.fine.service;
 
 import com.example.library.common.exception.BusinessRuleViolationException;
 import com.example.library.common.exception.ResourceNotFoundException;

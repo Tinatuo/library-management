@@ -1,4 +1,4 @@
-﻿package com.example.library.fine.dto;
+package com.example.library.fine.dto;
 
 import com.example.library.fine.entity.FineStatus;
 import lombok.AllArgsConstructor;

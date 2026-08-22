@@ -1,4 +1,4 @@
-﻿package com.example.library.fine.mapper;
+package com.example.library.fine.mapper;
 
 import com.example.library.fine.dto.FineResponseDto;
 import com.example.library.fine.entity.Fine;
