@@ -31,6 +31,11 @@ public class LoanController {
         return ResponseEntity.ok(loanService.returnBook(id));
     }
 
+    @PostMapping("/{id}/renew")
+    public ResponseEntity<LoanResponseDto> renewLoan(@PathVariable Long id) {
+        return ResponseEntity.ok(loanService.renewLoan(id));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<LoanResponseDto> getLoanById(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.getLoanById(id));
