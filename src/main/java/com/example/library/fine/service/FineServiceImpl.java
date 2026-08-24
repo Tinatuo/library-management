@@ -1,5 +1,7 @@
 package com.example.library.fine.service;
 
+import com.example.library.common.dto.PageResponseDto;
+import com.example.library.common.dto.PageResponseMapper;
 import com.example.library.common.exception.BusinessRuleViolationException;
 import com.example.library.common.exception.ResourceNotFoundException;
 import com.example.library.fine.dto.FineResponseDto;
@@ -9,6 +11,9 @@ import com.example.library.fine.entity.FineStatus;
 import com.example.library.fine.mapper.FineMapper;
 import com.example.library.fine.repository.FineRepository;
 import com.example.library.loan.entity.Loan;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -65,11 +70,12 @@ public class FineServiceImpl implements FineService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public List<FineResponseDto> getFinesByMember(Long memberId) {
-        return fineRepository.findByMemberId(memberId)
-                .stream()
-                .map(fineMapper::toResponseDto)
-                .toList();
+    public PageResponseDto getFinesByMember(Long memberId, int page, int size) {
+        Page<FineResponseDto> result = fineRepository.findByMemberId(
+                        memberId,
+                        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
+                .map(fineMapper::toResponseDto);
+        return PageResponseMapper.toPageResponse(result);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.example.library.fine.controller;
 
+import com.example.library.common.dto.PageResponseDto;
 import com.example.library.fine.dto.FineResponseDto;
 import com.example.library.fine.dto.FineSummaryDto;
 import com.example.library.fine.service.FineService;
@@ -19,8 +20,8 @@ public class FineController {
     }
 
     @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<FineResponseDto>> getFinesByMember(@PathVariable Long memberId) {
-        return ResponseEntity.ok(fineService.getFinesByMember(memberId));
+    public ResponseEntity<PageResponseDto<FineResponseDto>> getFinesByMember(@PathVariable Long memberId, @RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(fineService.getFinesByMember(memberId, page, size));
     }
 
     @GetMapping("/member/{memberId}/unpaid-summary")

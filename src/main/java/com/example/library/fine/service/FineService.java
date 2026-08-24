@@ -1,5 +1,6 @@
 package com.example.library.fine.service;
 
+import com.example.library.common.dto.PageResponseDto;
 import com.example.library.fine.dto.FineResponseDto;
 import com.example.library.fine.dto.FineSummaryDto;
 import com.example.library.loan.entity.Loan;
@@ -12,7 +13,7 @@ public interface FineService {
 
     FineResponseDto payFine(Long fineId);
 
-    List<FineResponseDto> getFinesByMember(Long memberId);
+    PageResponseDto<FineResponseDto> getFinesByMember(Long memberId,int page,int size);
 
     FineSummaryDto getUnpaidSummaryByMember(Long memberId);
 }
