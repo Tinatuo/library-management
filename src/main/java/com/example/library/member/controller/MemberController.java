@@ -1,5 +1,6 @@
 package com.example.library.member.controller;
 
+import com.example.library.common.dto.PageResponseDto;
 import com.example.library.member.dto.MemberRequestDto;
 import com.example.library.member.dto.MemberResponseDto;
 import com.example.library.member.service.MemberService;
@@ -33,9 +34,12 @@ public class MemberController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MemberResponseDto>> getAllMembers() {
-        return ResponseEntity.ok(memberService.getAllMembers());
+    public ResponseEntity<PageResponseDto<MemberResponseDto>> getAllMembers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(memberService.getAllMembers(page, size));
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<MemberResponseDto> updateMember(@PathVariable Long id,

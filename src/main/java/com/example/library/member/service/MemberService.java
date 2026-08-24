@@ -1,5 +1,6 @@
 package com.example.library.member.service;
 
+import com.example.library.common.dto.PageResponseDto;
 import com.example.library.member.dto.MemberRequestDto;
 import com.example.library.member.dto.MemberResponseDto;
 import com.example.library.member.entity.Member;
@@ -14,7 +15,7 @@ public interface MemberService {
 
     Member getMemberEntityById(Long id);
 
-    List<MemberResponseDto> getAllMembers();
+    PageResponseDto<MemberResponseDto> getAllMembers(int page, int size);
 
     MemberResponseDto updateMember(Long id, MemberRequestDto requestDto);
 

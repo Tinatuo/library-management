@@ -1,5 +1,7 @@
 package com.example.library.member.service;
 
+import com.example.library.common.dto.PageResponseDto;
+import com.example.library.common.dto.PageResponseMapper;
 import com.example.library.common.exception.DuplicateResourceException;
 import com.example.library.common.exception.ResourceNotFoundException;
 import com.example.library.member.dto.MemberRequestDto;
@@ -7,6 +9,9 @@ import com.example.library.member.dto.MemberResponseDto;
 import com.example.library.member.entity.Member;
 import com.example.library.member.mapper.MemberMapper;
 import com.example.library.member.repository.MemberRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,11 +53,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MemberResponseDto> getAllMembers() {
-        return memberRepository.findAll()
-                .stream()
-                .map(member -> memberMapper.toResponseDto(member))
-                .toList();
+    public PageResponseDto<MemberResponseDto> getAllMembers(int page,int size) {
+        Page<MemberResponseDto> result=memberRepository.findAll(
+                PageRequest.of(page,size,Sort.by(Sort.Direction.ASC, "id")))
+                .map(memberMapper::toResponseDto);
+        return PageResponseMapper.toPageResponse(result);
     }
 
     @Override
