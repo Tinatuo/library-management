@@ -1,5 +1,6 @@
 package com.example.library.reservation.controller;
 
+import com.example.library.common.dto.PageResponseDto;
 import com.example.library.reservation.dto.ReservationRequestDto;
 import com.example.library.reservation.dto.ReservationResponseDto;
 import com.example.library.reservation.service.ReservationService;
@@ -32,12 +33,20 @@ public class ReservationController {
     }
 
     @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<ReservationResponseDto>> getReservationsByMember(@PathVariable Long memberId) {
-        return ResponseEntity.ok(reservationService.getReservationsByMember(memberId));
+    public ResponseEntity<PageResponseDto<ReservationResponseDto>> getReservationsByMember(
+            @PathVariable Long memberId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(
+                reservationService.getReservationsByMember(memberId, page, size));
     }
 
     @GetMapping("/book/{bookId}/queue")
-    public ResponseEntity<List<ReservationResponseDto>> getQueueForBook(@PathVariable Long bookId) {
-        return ResponseEntity.ok(reservationService.getQueueForBook(bookId));
+    public ResponseEntity<PageResponseDto<ReservationResponseDto>> getQueueForBook(
+            @PathVariable Long bookId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(
+                reservationService.getQueueForBook(bookId, page, size));
     }
 }

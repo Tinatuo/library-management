@@ -4,6 +4,8 @@ import com.example.library.book.entity.Book;
 import com.example.library.reservation.dto.ReservationResponseDto;
 import com.example.library.reservation.entity.Reservation;
 import com.example.library.reservation.entity.ReservationStatus;
+import org.springframework.data.domain.jaxb.SpringDataJaxb;
+import com.example.library.common.dto.PageResponseDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +16,9 @@ public interface ReservationService {
 
     ReservationResponseDto cancelReservation(Long reservationId);
 
-    List<ReservationResponseDto> getReservationsByMember(Long memberId);
+    PageResponseDto<ReservationResponseDto> getReservationsByMember(Long memberId, int page, int size);
 
-    List<ReservationResponseDto> getQueueForBook(Long bookId);
+    PageResponseDto<ReservationResponseDto> getQueueForBook(Long bookId, int page, int size);
 
     boolean hasActiveReservation(Long bookId);
 
