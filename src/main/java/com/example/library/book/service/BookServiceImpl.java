@@ -5,9 +5,14 @@ import com.example.library.book.dto.BookResponseDto;
 import com.example.library.book.entity.Book;
 import com.example.library.book.entity.BookStatus;
 import com.example.library.book.mapper.BookMapper;
+import com.example.library.common.dto.PageResponseDto;
+import com.example.library.common.dto.PageResponseMapper;
 import com.example.library.common.exception.DuplicateResourceException;
 import com.example.library.common.exception.ResourceNotFoundException;
 import com.example.library.book.repository.BookRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -44,11 +49,11 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookResponseDto> getAllBooks() {
-        return bookRepository.findAll()
-                .stream()
-                .map(book -> bookMapper.toResponseDto(book))
-                .toList();
+    public PageResponseDto<BookResponseDto> getAllBooks(int page, int size) {
+        Page<BookResponseDto> result = bookRepository.findAll(
+                        PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")))
+                .map(bookMapper::toResponseDto);
+        return PageResponseMapper.toPageResponse(result);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.example.library.book.service;
 import com.example.library.book.dto.BookRequestDto;
 import com.example.library.book.dto.BookResponseDto;
 import com.example.library.book.entity.Book;
+import com.example.library.common.dto.PageResponseDto;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface BookService {
 
     BookResponseDto getBookById(Long id);
 
-    List<BookResponseDto> getAllBooks();
+    PageResponseDto<BookResponseDto> getAllBooks(int page, int size);
 
     BookResponseDto updateBook(Long id, BookRequestDto requestDto);
 
