@@ -3,6 +3,8 @@ package com.example.library.loan.service;
 import com.example.library.book.entity.Book;
 import com.example.library.book.entity.BookStatus;
 import com.example.library.book.service.BookService;
+import com.example.library.common.dto.PageResponseDto;
+import com.example.library.common.dto.PageResponseMapper;
 import com.example.library.common.exception.BusinessRuleViolationException;
 import com.example.library.common.exception.ResourceNotFoundException;
 import com.example.library.loan.dto.LoanRequestDto;
@@ -17,6 +19,9 @@ import com.example.library.reservation.service.ReservationService;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,15 +120,6 @@ public class LoanServiceImpl implements LoanService {
         return loanMapper.toResponseDto(loan);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<LoanResponseDto> getAllLoans() {
-        return loanRepository.findAll()
-                .stream()
-                .map(loanMapper::toResponseDto)
-                .toList();
-    }
-
 
     @Override
     public LoanResponseDto renewLoan(Long loanId) {
@@ -161,14 +157,25 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LoanResponseDto> getLoansByMember(Long memberId) {
+    public PageResponseDto<LoanResponseDto> getAllLoans(int page, int size) {
+        Page<LoanResponseDto> result=loanRepository.findAll(
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
+                .map(loanMapper::toResponseDto);
+        return PageResponseMapper.toPageResponse(result);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDto<LoanResponseDto> getLoansByMember(Long memberId, int page, int size) {
         if (!memberService.existsById(memberId)) {
             throw new ResourceNotFoundException("Member with ID " + memberId + " was not found");
         }
-        return loanRepository.findByMemberId(memberId)
-                .stream()
-                .map(loanMapper::toResponseDto)
-                .toList();
+        Page<LoanResponseDto> result = loanRepository.findByMemberId(
+                        memberId,
+                        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
+                .map(loanMapper::toResponseDto);
+        return PageResponseMapper.toPageResponse(result);
     }
 }
 

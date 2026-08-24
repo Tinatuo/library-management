@@ -1,5 +1,6 @@
 package com.example.library.loan.controller;
 
+import com.example.library.common.dto.PageResponseDto;
 import com.example.library.loan.dto.LoanRequestDto;
 import com.example.library.loan.dto.LoanResponseDto;
 import com.example.library.loan.service.LoanService;
@@ -42,12 +43,12 @@ public class LoanController {
     }
 
     @GetMapping
-    public ResponseEntity<List<LoanResponseDto>> getAllLoans() {
-        return ResponseEntity.ok(loanService.getAllLoans());
+    public ResponseEntity<PageResponseDto<LoanResponseDto>> getAllLoans(int page, int size) {
+        return ResponseEntity.ok(loanService.getAllLoans(page, size));
     }
 
     @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<LoanResponseDto>> getLoansByMember(@PathVariable Long memberId) {
-        return ResponseEntity.ok(loanService.getLoansByMember(memberId));
+    public ResponseEntity<PageResponseDto<LoanResponseDto>> getLoansByMember(@PathVariable Long memberId, @RequestParam(defaultValue ="0") int page, @RequestParam(defaultValue ="5") int size) {
+        return ResponseEntity.ok(loanService.getLoansByMember(memberId,page,size));
     }
 }

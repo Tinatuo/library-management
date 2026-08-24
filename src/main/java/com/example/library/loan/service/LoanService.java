@@ -1,5 +1,6 @@
 package com.example.library.loan.service;
 
+import com.example.library.common.dto.PageResponseDto;
 import com.example.library.loan.dto.LoanRequestDto;
 import com.example.library.loan.dto.LoanResponseDto;
 
@@ -15,7 +16,7 @@ public interface LoanService {
 
     LoanResponseDto getLoanById(Long id);
 
-    List<LoanResponseDto> getAllLoans();
+    PageResponseDto<LoanResponseDto> getAllLoans(int page, int size);
 
-    List<LoanResponseDto> getLoansByMember(Long memberId);
+    PageResponseDto<LoanResponseDto> getLoansByMember(Long memberId,int page, int size);
 }
