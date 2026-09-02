@@ -27,4 +27,7 @@ public interface ReservationService {
     void fulfillReservation(Long bookId, Long memberId);
 
     boolean hasReadyReservation(Long bookId, Long memberId);
+
+    Long getOwnerMemberId(Long reservationId);
+
 }

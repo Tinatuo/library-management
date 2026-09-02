@@ -7,6 +7,7 @@ import com.example.library.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,17 +23,20 @@ public class ReservationController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN') or @currentUserService.isSelf(#requestDto.memberId)")
     public ResponseEntity<ReservationResponseDto> reserveBook(@Valid @RequestBody ReservationRequestDto requestDto) {
         ReservationResponseDto reservation = reservationService.reserveBook(requestDto.getBookId(), requestDto.getMemberId());
         return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
     }
 
     @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN') or @reservationSecurity.isOwner(#id)")
     public ResponseEntity<ReservationResponseDto> cancelReservation(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.cancelReservation(id));
     }
 
     @GetMapping("/member/{memberId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN') or @currentUserService.isSelf(#memberId)")
     public ResponseEntity<PageResponseDto<ReservationResponseDto>> getReservationsByMember(
             @PathVariable Long memberId,
             @RequestParam(defaultValue = "0") int page,
@@ -42,6 +46,7 @@ public class ReservationController {
     }
 
     @GetMapping("/book/{bookId}/queue")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     public ResponseEntity<PageResponseDto<ReservationResponseDto>> getQueueForBook(
             @PathVariable Long bookId,
             @RequestParam(defaultValue = "0") int page,

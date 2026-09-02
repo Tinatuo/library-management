@@ -7,6 +7,7 @@ import com.example.library.loan.service.LoanService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,32 +23,38 @@ public class LoanController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN',@currentUserService.isSelf(requestDto.memberId))")
     public ResponseEntity<LoanResponseDto> borrowBook(@Valid @RequestBody LoanRequestDto requestDto) {
         LoanResponseDto loan = loanService.borrowBook(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(loan);
     }
 
     @PostMapping("/{id}/return")
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
     public ResponseEntity<LoanResponseDto> returnBook(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.returnBook(id));
     }
 
     @PostMapping("/{id}/renew")
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN',@loanSecurity.isOwner(#id))")
     public ResponseEntity<LoanResponseDto> renewLoan(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.renewLoan(id));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN',@loanSecurity.isOwner(#id))")
     public ResponseEntity<LoanResponseDto> getLoanById(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.getLoanById(id));
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
     public ResponseEntity<PageResponseDto<LoanResponseDto>> getAllLoans(int page, int size) {
         return ResponseEntity.ok(loanService.getAllLoans(page, size));
     }
 
     @GetMapping("/member/{memberId}")
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN',@currentUserService.isSelf(#memberId))")
     public ResponseEntity<PageResponseDto<LoanResponseDto>> getLoansByMember(@PathVariable Long memberId, @RequestParam(defaultValue ="0") int page, @RequestParam(defaultValue ="5") int size) {
         return ResponseEntity.ok(loanService.getLoansByMember(memberId,page,size));
     }

@@ -205,4 +205,13 @@ public class ReservationServiceImpl implements ReservationService {
 
         return reservationMapper.toResponseDto(reservation, queuePosition);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getOwnerMemberId(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Reservation with ID " + reservationId + " was not found"));
+        return reservation.getMember().getId();
+    }
 }

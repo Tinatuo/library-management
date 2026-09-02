@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,17 +24,20 @@ public class MemberController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
     public ResponseEntity<MemberResponseDto> createMember(@Valid @RequestBody MemberRequestDto requestDto) {
         MemberResponseDto createdMember = memberService.createMember(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMember);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN',@currentUserService.isSelf(#id))")
     public ResponseEntity<MemberResponseDto> getMemberById(@PathVariable Long id) {
         return ResponseEntity.ok(memberService.getMemberById(id));
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
     public ResponseEntity<PageResponseDto<MemberResponseDto>> getAllMembers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -42,6 +46,7 @@ public class MemberController {
 
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN',@currentUserService.isSelf(#id))")
     public ResponseEntity<MemberResponseDto> updateMember(@PathVariable Long id,
                                                           @Valid @RequestBody MemberRequestDto requestDto) {
         return ResponseEntity.ok(memberService.updateMember(id, requestDto));
