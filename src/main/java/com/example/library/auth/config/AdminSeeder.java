@@ -1,4 +1,4 @@
-﻿package com.example.library.auth.config;
+package com.example.library.auth.config;
 
 import com.example.library.auth.entity.Role;
 import com.example.library.auth.entity.User;

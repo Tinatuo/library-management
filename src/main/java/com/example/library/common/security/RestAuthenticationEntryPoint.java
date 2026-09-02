@@ -1,4 +1,4 @@
-﻿package com.example.library.common.security;
+package com.example.library.common.security;
 
 import com.example.library.common.dto.ApiError;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,4 +1,4 @@
-﻿package com.example.library.auth.entity;
+package com.example.library.auth.entity;
 
 public enum Role {
     ADMIN,

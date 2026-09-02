@@ -1,4 +1,4 @@
-﻿package com.example.library.security;
+package com.example.library.security;
 
 import com.example.library.auth.security.CurrentUserService;
 import com.example.library.loan.service.LoanService;

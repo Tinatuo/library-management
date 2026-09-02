@@ -1,4 +1,4 @@
-﻿package com.example.library.common.security;
+package com.example.library.common.security;
 
 import com.example.library.auth.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
