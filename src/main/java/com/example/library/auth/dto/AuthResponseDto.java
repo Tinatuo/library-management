@@ -16,6 +16,7 @@ public class AuthResponseDto {
 
     private String token;
     private String tokenType;
+    private String refreshToken;
     private Long userId;
     private String username;
     private Role role;

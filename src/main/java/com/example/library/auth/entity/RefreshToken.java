@@ -1,4 +1,4 @@
-﻿package com.example.library.auth.entity;
+package com.example.library.auth.entity;
 
 import com.example.library.common.entity.BaseEntity;
 import jakarta.persistence.*;

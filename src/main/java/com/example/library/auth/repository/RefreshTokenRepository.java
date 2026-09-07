@@ -1,4 +1,4 @@
-﻿package com.example.library.auth.repository;
+package com.example.library.auth.repository;
 
 import com.example.library.auth.entity.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;

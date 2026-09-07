@@ -1,4 +1,4 @@
-﻿package com.example.library.auth.service;
+package com.example.library.auth.service;
 
 import com.example.library.auth.entity.RefreshToken;
 import com.example.library.auth.entity.User;
@@ -6,12 +6,14 @@ import com.example.library.auth.repository.RefreshTokenRepository;
 import com.example.library.auth.repository.RefreshTokenRepository;
 import com.example.library.common.exception.InvalidTokenException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Service
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
