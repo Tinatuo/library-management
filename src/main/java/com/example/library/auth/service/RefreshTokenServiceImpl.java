@@ -24,6 +24,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         this.refreshTokenRepository = refreshTokenRepository;
         this.refreshExpirationMs = refreshExpirationMs;
     }
+
+
     @Override
     public RefreshToken createRefreshToken(User user) {
         RefreshToken refreshToken = RefreshToken.builder()
@@ -32,8 +34,10 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .expiryDate(LocalDateTime.now().plus(Duration.ofMillis(refreshExpirationMs)))
                 .revoked(false)
                 .build();
+        System.out.println("Saving refresh token: " + refreshToken.getToken());
         return refreshTokenRepository.save(refreshToken);
     }
+
 
     @Override
     @Transactional(readOnly = true)

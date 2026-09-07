@@ -39,10 +39,15 @@ public class AuthServiceImpl implements AuthService {
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
         String token = jwtService.generateToken(principal);
 
+        User user = userService.getUserEntityByUsername(principal.getUsername());
+
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
         String role = principal.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
 
         return AuthResponseDto.builder()
                 .token(token)
+                .refreshToken(refreshToken.getToken())
                 .tokenType("Bearer")
                 .userId(principal.getUserId())
                 .username(principal.getUsername())
