@@ -85,6 +85,7 @@ public class BookController {
                 .body(cover.resource());
     }
 
+
     @DeleteMapping("/{id}/cover")
     @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
     public ResponseEntity<Void> deleteCoverImage(@PathVariable Long id) {
