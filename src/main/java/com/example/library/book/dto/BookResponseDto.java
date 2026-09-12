@@ -21,4 +21,8 @@ public class BookResponseDto {
     private String publisher;
     private Integer publishedYear;
     private BookStatus status;
+    private boolean hasCoverImage;
+    private String coverOriginalFileName;
+    private String coverContentType;
+    private Long coverFileSize;
 }

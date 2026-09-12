@@ -37,6 +37,11 @@ public class BookMapper {
                 .publisher(book.getPublisher())
                 .publishedYear(book.getPublishedYear())
                 .status(book.getStatus())
+                .hasCoverImage(book.getCoverStoredFileName() != null)
+                .coverOriginalFileName(book.getCoverOriginalFileName())
+                .coverContentType(book.getCoverContentType())
+                .coverFileSize(book.getCoverFileSize())
                 .build();
     }
 }
+

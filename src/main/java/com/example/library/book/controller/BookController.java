@@ -1,15 +1,20 @@
 package com.example.library.book.controller;
 
+import com.example.library.book.dto.BookCoverDownloadDto;
 import com.example.library.book.dto.BookRequestDto;
 import com.example.library.book.dto.BookResponseDto;
 import com.example.library.book.service.BookService;
 import com.example.library.book.service.BookServiceImpl;
 import com.example.library.common.dto.PageResponseDto;
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -54,6 +59,36 @@ public class BookController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/{id}/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
+    public ResponseEntity<BookResponseDto> uploadCoverImage(@PathVariable Long id,
+                                                            @RequestParam("file") MultipartFile file) {
+        BookResponseDto updatedBook = bookService.uploadCoverImage(id, file);
+        return ResponseEntity.ok(updatedBook);
+    }
+
+    @GetMapping("/{id}/cover")
+    public ResponseEntity<Resource> downloadCoverImage(@PathVariable Long id) {
+        BookCoverDownloadDto cover = bookService.getCoverImage(id);
+
+        MediaType mediaType = (cover.contentType() != null)
+                ? MediaType.parseMediaType(cover.contentType())
+                : MediaType.APPLICATION_OCTET_STREAM;
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + cover.originalFileName() + "\"")
+                .body(cover.resource());
+    }
+
+    @DeleteMapping("/{id}/cover")
+    @PreAuthorize("hasAnyRole('ADMIN','LIBRARIAN')")
+    public ResponseEntity<Void> deleteCoverImage(@PathVariable Long id) {
+        bookService.deleteCoverImage(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -37,4 +37,12 @@ public class Book extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookStatus status;
+
+    private String coverStoredFileName;
+
+    private String coverOriginalFileName;
+
+    private String coverContentType;
+
+    private Long coverFileSize;
 }

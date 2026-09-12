@@ -34,6 +34,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
     }
 
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ApiError> handleInvalidFile(InvalidFileException ex, HttpServletRequest request) {
+        ApiError apiError = buildApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
+    }
+
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<ApiError> handleFileStorage(FileStorageException ex, HttpServletRequest request) {
+        ApiError apiError = buildApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationErrors(MethodArgumentNotValidException ex, HttpServletRequest request) {
         Map<String, String> validationErrors = new HashMap<>();
