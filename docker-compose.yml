@@ -22,20 +22,31 @@
     depends_on:
       postgres:
         condition: service_healthy
+
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: library_db
       DB_USERNAME: postgres
       DB_PASSWORD: Tina753546
+
       FLYWAY_ENABLED: "false"
+
       JWT_SECRET: b3f5b1b6f0a4e8d3c9a7f2e6d4b8c1a5e9f3d7b2c6a0e4f8d2b6a1c5e9f3d7b2
       JWT_EXPIRATION_MS: 900000
       JWT_REFRESH_EXPIRATION_MS: 604800000
+
       ADMIN_USERNAME: admin
       ADMIN_PASSWORD: admin123
+
+      BOOK_COVERS_DIR: /app/uploads/book-covers
+
     ports:
       - "8080:8080"
+
+    volumes:
+      - ./uploads:/app/uploads
+
 
 volumes:
   pgdata:

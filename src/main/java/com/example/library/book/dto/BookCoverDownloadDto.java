@@ -1,4 +1,4 @@
-﻿package com.example.library.book.dto;
+package com.example.library.book.dto;
 
 import org.springframework.core.io.Resource;
 

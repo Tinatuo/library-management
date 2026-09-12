@@ -1,4 +1,4 @@
-﻿package com.example.library.book.storage;
+package com.example.library.book.storage;
 
 import com.example.library.common.exception.FileStorageException;
 import com.example.library.common.exception.ResourceNotFoundException;
@@ -40,6 +40,8 @@ public class BookCoverStorageService {
         String storedFileName = UUID.randomUUID() + extension;
         Path targetPath = storageDirectory.resolve(storedFileName).normalize();
 
+        System.out.println(storageDirectory);
+        System.out.println(targetPath);
 
         try (InputStream inputStream = file.getInputStream();
              OutputStream outputStream = Files.newOutputStream(targetPath,
