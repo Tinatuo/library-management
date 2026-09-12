@@ -1,0 +1,41 @@
+﻿services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: library-postgres
+    environment:
+      POSTGRES_DB: library_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Tina753546
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d library_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: library-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: library_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: Tina753546
+      FLYWAY_ENABLED: "false"
+      JWT_SECRET: b3f5b1b6f0a4e8d3c9a7f2e6d4b8c1a5e9f3d7b2c6a0e4f8d2b6a1c5e9f3d7b2
+      JWT_EXPIRATION_MS: 900000
+      JWT_REFRESH_EXPIRATION_MS: 604800000
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
