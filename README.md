@@ -11,11 +11,11 @@ A **Modular Monolith** library management backend built with **Spring Boot 4** a
 - **Loan lifecycle** — borrowing, returning, and renewing books
 - **Reservation queue** — FIFO waitlist for books that are currently unavailable, with automatic promotion when a book is returned
 - **Fine system** — automatic fine calculation on late returns, with payment tracking
-- **Redis caching** — DTO-level caching on frequently-read book data via `@Cacheable`/`@CacheEvict`, cutting down redundant database hits
+- **Redis caching** — DTO-level caching for books, members, and completed loans via `@Cacheable`/`@CacheEvict`, each with its own TTL and eviction rules
 - **JWT authentication** — stateless access tokens (15 min expiry) + rotating refresh tokens stored in the database
 - **Role-based access control** — `ADMIN`, `LIBRARIAN`, and `MEMBER` roles enforced via `@PreAuthorize`
 - **Ownership-based authorization** — members can only access their own loans, reservations, and fines
-- **Dockerized setup** — one-command startup with PostgreSQL
+- **Dockerized setup** — one-command startup with PostgreSQL and Redis
 
 ---
 
@@ -89,9 +89,17 @@ For example, when the `loan` module needs book data, it depends on `BookService`
 
 ## ⚡ Caching Strategy
 
-Redis is used to cache frequently-read book data at the **DTO layer** of `BookServiceImpl`, via `@Cacheable` and `@CacheEvict`.
+Redis backs three independent cache regions, each configured in `RedisConfig` with its own TTL:
 
-> **Only DTOs are cached — never JPA-managed entities.** Caching an entity that's shared and mutated across modules risks serving stale state once another module updates it outside of Hibernate's session. For this reason, `getBookEntityById` (used internally by other modules) is deliberately excluded from caching, while the public-facing DTO-returning methods are cached safely.
+| Cache region | TTL     | Used in                          |
+|--------------|---------|------------------------------------|
+| `books`      | 10 min  | `BookServiceImpl#getBookById`      |
+| `members`    | 5 min   | `MemberServiceImpl#getMemberById`  |
+| `loans`      | 60 min  | `LoanServiceImpl#getLoanById`      |
+
+> **Only DTOs are cached — never JPA-managed entities.** Caching an entity that's shared and mutated across modules risks serving stale state once another module updates it outside of Hibernate's session. For this reason, `getBookEntityById` (used internally by other modules for write operations) is deliberately excluded from caching, while the public-facing DTO-returning methods are cached safely via `@Cacheable`/`@CacheEvict`.
+
+A notable refinement is on the `loans` cache: `getLoanById` only caches a loan **once it's no longer `ACTIVE`** (`unless = "#result.status.name() == 'ACTIVE'"`). An active loan's state can still change (renewal, return), so caching it would risk staleness; a returned loan is effectively immutable, so it's safe — and worthwhile, given the long 60-minute TTL — to cache.
 
 ---
 
@@ -111,7 +119,8 @@ docker compose up --build
 
 This will spin up:
 - A PostgreSQL 18 container on port `5433`
-- The Spring Boot application on port `8080`
+- A Redis 7 container on port `6379`
+- The Spring Boot application on port `8080`, waiting for both to pass their health checks before starting
 
 All sensitive configuration (DB credentials, JWT secret, admin credentials) is injected via environment variables in `docker-compose.yml`.
 
@@ -141,6 +150,8 @@ Configuration lives in `src/main/resources/application.properties`. Every sensit
 | Refresh token expiry               | `JWT_REFRESH_EXPIRATION_MS` | `604800000` (7 days)   |
 | Default admin credentials          | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | `admin` / *(local dev password)* |
 | Book cover storage directory       | `BOOK_COVERS_DIR`           | `uploads/book-covers`  |
+| Redis host/port                    | `REDIS_HOST`, `REDIS_PORT`  | `127.0.0.1` / `6379`   |
+| Book cache TTL (seconds)           | `BOOK_CACHE_TTL_SECONDS`    | `600`                  |
 | Flyway enabled                     | `FLYWAY_ENABLED`            | `false`                |
 
 > **Note:** Flyway migration scripts exist under `src/main/resources/db/migration`, but Flyway is currently disabled in favor of `spring.jpa.hibernate.ddl-auto=update`. This is a known inconsistency to be resolved as the project matures — one of the two approaches will eventually be adopted as the single source of truth for schema management.
