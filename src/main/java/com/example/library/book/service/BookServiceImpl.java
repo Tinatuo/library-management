@@ -13,6 +13,8 @@ import com.example.library.common.exception.DuplicateResourceException;
 import com.example.library.common.exception.InvalidFileException;
 import com.example.library.common.exception.ResourceNotFoundException;
 import com.example.library.book.repository.BookRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -56,6 +58,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @Cacheable(value = "books", key = "#id")
     public BookResponseDto getBookById(Long id) {
         Book book = findBookOrThrow(id);
         return bookMapper.toResponseDto(book);
@@ -71,6 +74,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @CacheEvict(value = "books", key = "#id")
     public BookResponseDto updateBook(Long id, BookRequestDto requestDto) {
         Book book = findBookOrThrow(id);
 
@@ -86,6 +90,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @CacheEvict(value = "books", key = "#id")
     public void deleteBook(Long id) {
         Book book = findBookOrThrow(id);
         if (book.getCoverStoredFileName() != null) {
@@ -105,6 +110,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @CacheEvict(value = "books", key = "#id")
     public void markAsBorrowed(Long id) {
         Book book = getBookEntityById(id);
         book.setStatus(BookStatus.BORROWED);
@@ -112,6 +118,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @CacheEvict(value = "books", key = "#id")
     public void markAsAvailable(Long id) {
         Book book = getBookEntityById(id);
         book.setStatus(BookStatus.AVAILABLE);
@@ -124,6 +131,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @CacheEvict(value = "books", key = "#id")
     public BookResponseDto uploadCoverImage(Long id, MultipartFile file) {
         Book book = findBookOrThrow(id);
         validateCoverImage(file);
@@ -157,6 +165,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @CacheEvict(value = "books", key = "#id")
     public void deleteCoverImage(Long id) {
         Book book = findBookOrThrow(id);
         if (book.getCoverStoredFileName() == null) {

@@ -19,6 +19,7 @@ import com.example.library.reservation.service.ReservationService;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -114,6 +115,7 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "loans", key = "#id", unless = "#result.status.name() == 'ACTIVE'")
     public LoanResponseDto getLoanById(Long id) {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Loan with ID " + id + " was not found"));

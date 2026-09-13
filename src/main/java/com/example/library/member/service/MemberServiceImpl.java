@@ -9,6 +9,8 @@ import com.example.library.member.dto.MemberResponseDto;
 import com.example.library.member.entity.Member;
 import com.example.library.member.mapper.MemberMapper;
 import com.example.library.member.repository.MemberRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -41,6 +43,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "members", key = "#id")
     public MemberResponseDto getMemberById(Long id) {
         Member member = findMemberOrThrow(id);
         return memberMapper.toResponseDto(member);
@@ -61,6 +64,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @CacheEvict(value = "members", key = "#id")
     public MemberResponseDto updateMember(Long id, MemberRequestDto requestDto) {
         Member member = findMemberOrThrow(id);
 
