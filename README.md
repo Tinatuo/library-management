@@ -11,6 +11,7 @@ A **Modular Monolith** library management backend built with **Spring Boot 4** a
 - **Loan lifecycle** — borrowing, returning, and renewing books
 - **Reservation queue** — FIFO waitlist for books that are currently unavailable, with automatic promotion when a book is returned
 - **Fine system** — automatic fine calculation on late returns, with payment tracking
+- **Redis caching** — DTO-level caching on frequently-read book data via `@Cacheable`/`@CacheEvict`, cutting down redundant database hits
 - **JWT authentication** — stateless access tokens (15 min expiry) + rotating refresh tokens stored in the database
 - **Role-based access control** — `ADMIN`, `LIBRARIAN`, and `MEMBER` roles enforced via `@PreAuthorize`
 - **Ownership-based authorization** — members can only access their own loans, reservations, and fines
@@ -62,6 +63,7 @@ For example, when the `loan` module needs book data, it depends on `BookService`
 | Language         | Java 21                                      |
 | Framework        | Spring Boot 4 (Web MVC, Data JPA, Validation, Security) |
 | Database         | PostgreSQL                                   |
+| Caching          | Redis                                        |
 | Auth             | Spring Security + JJWT (JSON Web Tokens)     |
 | Build tool       | Maven                                        |
 | Containerization | Docker & Docker Compose                      |
@@ -82,6 +84,14 @@ For example, when the `loan` module needs book data, it depends on `BookService`
   | `MEMBER`    | Access limited to their own loans/reservations/fines |
 - Ownership checks (e.g. "is this loan mine?") are handled by dedicated security beans — `LoanSecurity`, `ReservationSecurity`, and `CurrentUserService` — referenced directly inside `@PreAuthorize` expressions.
 - An `AdminSeeder` creates a default admin account on startup so the API is usable immediately.
+
+---
+
+## ⚡ Caching Strategy
+
+Redis is used to cache frequently-read book data at the **DTO layer** of `BookServiceImpl`, via `@Cacheable` and `@CacheEvict`.
+
+> **Only DTOs are cached — never JPA-managed entities.** Caching an entity that's shared and mutated across modules risks serving stale state once another module updates it outside of Hibernate's session. For this reason, `getBookEntityById` (used internally by other modules) is deliberately excluded from caching, while the public-facing DTO-returning methods are cached safely.
 
 ---
 
