@@ -7,6 +7,7 @@ import com.example.library.book.entity.Book;
 import com.example.library.book.entity.BookStatus;
 import com.example.library.book.mapper.BookMapper;
 import com.example.library.book.storage.BookCoverStorageService;
+import com.example.library.common.aop.Audited;
 import com.example.library.common.dto.PageResponseDto;
 import com.example.library.common.dto.PageResponseMapper;
 import com.example.library.common.exception.DuplicateResourceException;
@@ -47,6 +48,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Audited(
+            action = "BOOK_CREATE",
+            details = "isbn=#{#requestDto.isbn}"
+    )
     public BookResponseDto createBook(BookRequestDto requestDto) {
         if (bookRepository.existsByIsbn(requestDto.getIsbn())) {
             throw new DuplicateResourceException("A book with this ISBN is already registered");
@@ -75,6 +80,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @CacheEvict(value = "books", key = "#id")
+    @Audited(
+            action="BOOK_UPDATE",
+            details="bookId=#{#id}"
+    )
     public BookResponseDto updateBook(Long id, BookRequestDto requestDto) {
         Book book = findBookOrThrow(id);
 
@@ -91,6 +100,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @CacheEvict(value = "books", key = "#id")
+    @Audited(
+            action = "BOOK_DELETE",
+            details = "bookId=#{#id}"
+    )
     public void deleteBook(Long id) {
         Book book = findBookOrThrow(id);
         if (book.getCoverStoredFileName() != null) {
@@ -111,6 +124,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @CacheEvict(value = "books", key = "#id")
+    @Audited(
+            action="BOOK_BORROW",
+            details="bookId=#{#id}"
+    )
     public void markAsBorrowed(Long id) {
         Book book = getBookEntityById(id);
         book.setStatus(BookStatus.BORROWED);
@@ -119,6 +136,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @CacheEvict(value = "books", key = "#id")
+    @Audited(
+            action="BOOK_RETURN",
+            details="bookId=#{#id}"
+    )
     public void markAsAvailable(Long id) {
         Book book = getBookEntityById(id);
         book.setStatus(BookStatus.AVAILABLE);
@@ -132,6 +153,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @CacheEvict(value = "books", key = "#id")
+    @Audited(
+            action="BOOK_COVER_UPLOAD",
+            details="bookId=#{#id}"
+    )
     public BookResponseDto uploadCoverImage(Long id, MultipartFile file) {
         Book book = findBookOrThrow(id);
         validateCoverImage(file);
@@ -166,6 +191,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @CacheEvict(value = "books", key = "#id")
+    @Audited(
+            action="BOOK_COVER_DELETE",
+            details="bookId=#{#id}"
+    )
     public void deleteCoverImage(Long id) {
         Book book = findBookOrThrow(id);
         if (book.getCoverStoredFileName() == null) {

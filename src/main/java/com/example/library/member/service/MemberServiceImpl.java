@@ -1,5 +1,6 @@
 package com.example.library.member.service;
 
+import com.example.library.common.aop.Audited;
 import com.example.library.common.dto.PageResponseDto;
 import com.example.library.common.dto.PageResponseMapper;
 import com.example.library.common.exception.DuplicateResourceException;
@@ -32,6 +33,10 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Audited(
+            action = "MEMBER_CREATE",
+            details = "email=#{#requestDto.email}"
+    )
     public MemberResponseDto createMember(MemberRequestDto requestDto) {
         if (memberRepository.existsByEmail(requestDto.getEmail())) {
             throw new DuplicateResourceException("A member with this email is already registered");
@@ -65,6 +70,10 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @CacheEvict(value = "members", key = "#id")
+    @Audited(
+            action = "MEMBER_UPDATE",
+            details = "memberId=#{#id}"
+    )
     public MemberResponseDto updateMember(Long id, MemberRequestDto requestDto) {
         Member member = findMemberOrThrow(id);
 

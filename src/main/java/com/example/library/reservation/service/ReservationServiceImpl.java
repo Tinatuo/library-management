@@ -3,6 +3,7 @@ package com.example.library.reservation.service;
 import com.example.library.book.entity.Book;
 import com.example.library.book.entity.BookStatus;
 import com.example.library.book.service.BookService;
+import com.example.library.common.aop.Audited;
 import com.example.library.common.dto.PageResponseDto;
 import com.example.library.common.dto.PageResponseMapper;
 import com.example.library.common.exception.BusinessRuleViolationException;
@@ -47,6 +48,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    @Audited(action = "RESERVATION_CREATE", details = "bookId=#{#bookId}, memberId=#{#memberId}")
     public ReservationResponseDto reserveBook(Long bookId, Long memberId) {
         Book book = bookService.getBookEntityById(bookId);
         Member member = memberService.getMemberEntityById(memberId);
@@ -83,6 +85,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    @Audited(action = "RESERVATION_CANCEL", details = "reservationId=#{#reservationId}")
     public ReservationResponseDto cancelReservation(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -172,6 +175,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    @Audited(action="RESERVATION_FULFILL", details="bookId=#{#bookId}, memberId=#{#memberId}")
     public void fulfillReservation(Long bookId, Long memberId) {
         Reservation reservation = reservationRepository
                 .findByBookIdAndMemberIdAndStatus(bookId, memberId, READY)

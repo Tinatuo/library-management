@@ -1,5 +1,6 @@
 package com.example.library.fine.service;
 
+import com.example.library.common.aop.Audited;
 import com.example.library.common.dto.PageResponseDto;
 import com.example.library.common.dto.PageResponseMapper;
 import com.example.library.common.exception.BusinessRuleViolationException;
@@ -54,6 +55,7 @@ public class FineServiceImpl implements FineService {
     }
 
     @Override
+    @Audited(action = "FINE_PAY", details = "fineId=#{#fineId}")
     public FineResponseDto payFine(Long fineId) {
         Fine fine = fineRepository.findById(fineId)
                 .orElseThrow(() -> new ResourceNotFoundException("Fine with ID " + fineId + " was not found"));

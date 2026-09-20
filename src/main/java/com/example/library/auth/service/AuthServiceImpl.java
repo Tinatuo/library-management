@@ -8,6 +8,7 @@ import com.example.library.auth.entity.Role;
 import com.example.library.auth.entity.User;
 import com.example.library.auth.security.JwtService;
 import com.example.library.auth.security.UserPrincipal;
+import com.example.library.common.aop.Audited;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,6 +33,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Audited(action = "USER_LOGIN", details = "username=#{#requestDto.username}")
     public AuthResponseDto login(LoginRequestDto requestDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(requestDto.getUsername(), requestDto.getPassword()));
@@ -58,6 +60,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Audited(action="USER_TOKEN_REFRESH")
     public AuthResponseDto refreshToken(RefreshTokenRequestDto requestDto) {
         RefreshToken oldRefreshToken = refreshTokenService.verifyAndGet(requestDto.getRefreshToken());
         User user=oldRefreshToken.getUser();
@@ -73,6 +76,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
+    @Audited(action="USER_LOGOUT")
     public void logout(RefreshTokenRequestDto requestDto) {
         refreshTokenService.revokeByTokenIfPresent(requestDto.getRefreshToken());
     }

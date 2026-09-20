@@ -3,6 +3,7 @@ package com.example.library.loan.service;
 import com.example.library.book.entity.Book;
 import com.example.library.book.entity.BookStatus;
 import com.example.library.book.service.BookService;
+import com.example.library.common.aop.Audited;
 import com.example.library.common.dto.PageResponseDto;
 import com.example.library.common.dto.PageResponseMapper;
 import com.example.library.common.exception.BusinessRuleViolationException;
@@ -62,6 +63,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
+    @Audited(action = "LOAN_BORROW", details = "bookId=#{#requestDto.bookId}, memberId=#{#requestDto.memberId}")
     public LoanResponseDto borrowBook(LoanRequestDto requestDto) {
         Book book = bookService.getBookEntityById(requestDto.getBookId());
 
@@ -95,6 +97,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
+    @Audited(action = "LOAN_RETURN", details = "loanId=#{#loanId}")
     public LoanResponseDto returnBook(Long loanId) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Loan with ID " + loanId + " was not found"));
@@ -124,6 +127,7 @@ public class LoanServiceImpl implements LoanService {
 
 
     @Override
+    @Audited(action = "LOAN_RENEW", details = "loanId=#{#loanId}")
     public LoanResponseDto renewLoan(Long loanId) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Loan with ID " + loanId + " was not found"));

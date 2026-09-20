@@ -52,6 +52,7 @@ public class AuditAspect {
                 renderDetails(joinPoint, audited));
     }
 
+
     private String currentActor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null

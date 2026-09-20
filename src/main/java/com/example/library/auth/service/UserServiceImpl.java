@@ -7,6 +7,7 @@ import com.example.library.auth.entity.Role;
 import com.example.library.auth.entity.User;
 import com.example.library.auth.mapper.UserMapper;
 import com.example.library.auth.repository.UserRepository;
+import com.example.library.common.aop.Audited;
 import com.example.library.common.exception.BusinessRuleViolationException;
 import com.example.library.common.exception.DuplicateResourceException;
 import com.example.library.common.exception.ResourceNotFoundException;
@@ -34,6 +35,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Audited(action = "USER_REGISTER", details = "username=#{#requestDto.username}")
     public UserResponseDto registerMember(RegisterRequestDto requestDto) {
 
         if (userRepository.existsByUsername(requestDto.getUsername())) {
@@ -60,6 +62,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Audited(action = "STAFF_REGISTER", details = "username=#{#requestDto.username}")
     public UserResponseDto registerStaff(StaffRegisterRequestDto requestDto) {
 
         if (userRepository.existsByUsername(requestDto.getUsername())) {
