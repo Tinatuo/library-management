@@ -15,6 +15,7 @@ A **Modular Monolith** library management backend built with **Spring Boot 4** a
 - **JWT authentication** — stateless access tokens (15 min expiry) + rotating refresh tokens stored in the database
 - **Role-based access control** — `ADMIN`, `LIBRARIAN`, and `MEMBER` roles enforced via `@PreAuthorize`
 - **Ownership-based authorization** — members can only access their own loans, reservations, and fines
+- **Aspect-oriented cross-cutting concerns** — service-call tracing, slow-call warnings, and an audit trail for key business operations, implemented as Spring AOP aspects
 - **Dockerized setup** — one-command startup with PostgreSQL and Redis
 
 ---
@@ -32,7 +33,7 @@ com.example.library
 ├── reservation    # FIFO reservation queue
 ├── auth           # Authentication, JWT, refresh tokens
 ├── security       # Cross-cutting ownership checks (LoanSecurity, ReservationSecurity)
-└── common         # Shared exceptions, DTOs, base entities, security infrastructure
+└── common         # Shared exceptions, DTOs, base entities, security infrastructure, AOP aspects
 ```
 
 Each module follows the same internal layout:
@@ -65,6 +66,7 @@ For example, when the `loan` module needs book data, it depends on `BookService`
 | Database         | PostgreSQL                                   |
 | Caching          | Redis                                        |
 | Auth             | Spring Security + JJWT (JSON Web Tokens)     |
+| Cross-cutting    | Spring AOP + AspectJ                         |
 | Build tool       | Maven                                        |
 | Containerization | Docker & Docker Compose                      |
 | Boilerplate      | Lombok                                       |
@@ -100,6 +102,51 @@ Redis backs three independent cache regions, each configured in `RedisConfig` wi
 > **Only DTOs are cached — never JPA-managed entities.** Caching an entity that's shared and mutated across modules risks serving stale state once another module updates it outside of Hibernate's session. For this reason, `getBookEntityById` (used internally by other modules for write operations) is deliberately excluded from caching, while the public-facing DTO-returning methods are cached safely via `@Cacheable`/`@CacheEvict`.
 
 A notable refinement is on the `loans` cache: `getLoanById` only caches a loan **once it's no longer `ACTIVE`** (`unless = "#result.status.name() == 'ACTIVE'"`). An active loan's state can still change (renewal, return), so caching it would risk staleness; a returned loan is effectively immutable, so it's safe — and worthwhile, given the long 60-minute TTL — to cache.
+
+---
+
+## 🧩 Aspect-Oriented Programming (AOP)
+
+Logging, timing, and auditing would otherwise be repeated in every service. They live in one place instead, in `common/aop`, so the service classes only contain business logic. No aspect touches a `Repository`, so the module boundary rule above is unaffected.
+
+| Aspect               | Purpose                                                                 | Advice                              |
+|----------------------|--------------------------------------------------------------------------|--------------------------------------|
+| `LoggingAspect`      | DEBUG trace of every service call: entry, exit, and exceptions passing through | `@Around`                            |
+| `PerformanceAspect`  | Logs a `WARN` when a service call is slower than a configurable threshold | `@Around`                            |
+| `AuditAspect`        | Writes one audit line (who, what, outcome) for each `@Audited` method    | `@AfterReturning`, `@AfterThrowing`  |
+
+Shared pointcuts are declared once in `Pointcuts`. `serviceLayer()` matches every public method of a class in a `service` package (`execution(public * com.example.library..service..*.*(..))`), so security and infrastructure beans are never proxied.
+
+### Audit trail
+
+Business operations are marked with the `@Audited` annotation on the service implementation method:
+
+```java
+@Audited(action = "LOAN_BORROW",
+         details = "bookId=#{#requestDto.bookId}, memberId=#{#requestDto.memberId}")
+public LoanResponseDto borrowBook(LoanRequestDto requestDto) { ... }
+```
+
+Audited actions: `LOAN_BORROW`, `LOAN_RETURN`, `LOAN_RENEW`, `FINE_PAY`, `RESERVATION_CREATE`, `RESERVATION_CANCEL`, `BOOK_DELETE`, `USER_LOGIN`, `USER_REGISTER`, `STAFF_REGISTER`.
+
+Lines are written to a dedicated logger named `AUDIT`:
+
+```
+DEBUG LoggingAspect     : -> LoanServiceImpl.borrowBook(..) args=[LoanRequestDto]
+INFO  AUDIT             : action=LOAN_BORROW actor=admin outcome=SUCCESS details=[bookId=3, memberId=5]
+DEBUG LoggingAspect     : <- LoanServiceImpl.borrowBook(..)
+WARN  AUDIT             : action=USER_LOGIN actor=anonymous outcome=FAILURE reason=BadCredentialsException details=[username=admin]
+WARN  PerformanceAspect : Slow call: LoanServiceImpl.getAllLoans(..) took 812 ms (threshold 500 ms)
+```
+
+Design decisions worth knowing:
+
+- **Sensitive data never reaches the logs.** `details` is a whitelist — only what is listed in the annotation is written — and `LoggingAspect` prints only numbers, booleans, and enums, reducing everything else (DTOs, strings, tokens) to its type name. Line breaks are stripped from user-supplied values to prevent log forging.
+- **Aspect order is deliberate.** Performance → Logging → Audit → `@Transactional`/`@Cacheable` → target method. Because audit runs outside the transaction, `SUCCESS` is only recorded after the commit, and the measured time includes it.
+- **Aspects never break the business call.** A failure while rendering audit details is caught and logged as a warning instead of surfacing to the caller.
+- **Self-invocation is not intercepted** (a service calling its own method bypasses the proxy) — the same limitation that applies to `@Transactional` and `@Cacheable`.
+
+See [`AOP_GUIDE.md`](AOP_GUIDE.md) for a detailed walkthrough.
 
 ---
 
@@ -152,6 +199,8 @@ Configuration lives in `src/main/resources/application.properties`. Every sensit
 | Book cover storage directory       | `BOOK_COVERS_DIR`           | `uploads/book-covers`  |
 | Redis host/port                    | `REDIS_HOST`, `REDIS_PORT`  | `127.0.0.1` / `6379`   |
 | Book cache TTL (seconds)           | `BOOK_CACHE_TTL_SECONDS`    | `600`                  |
+| Slow service call threshold (ms)   | `AOP_SLOW_CALL_THRESHOLD_MS`| `500`                  |
+| Service call trace log level       | `AOP_TRACE_LEVEL`           | `DEBUG` (set `INFO` to silence) |
 | Flyway enabled                     | `FLYWAY_ENABLED`            | `false`                |
 
 > **Note:** Flyway migration scripts exist under `src/main/resources/db/migration`, but Flyway is currently disabled in favor of `spring.jpa.hibernate.ddl-auto=update`. This is a known inconsistency to be resolved as the project matures — one of the two approaches will eventually be adopted as the single source of truth for schema management.
