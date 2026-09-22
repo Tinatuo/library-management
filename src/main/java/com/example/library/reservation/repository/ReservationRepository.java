@@ -39,6 +39,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     boolean existsByBookIdAndStatusIn(Long bookId, List<ReservationStatus> statuses);
 
+    List<Reservation> findByStatusAndReadyAtBefore(ReservationStatus status, LocalDateTime cutoff);
+
     @Query("""
             SELECT COUNT(r) FROM Reservation r
             WHERE r.book.id = :bookId

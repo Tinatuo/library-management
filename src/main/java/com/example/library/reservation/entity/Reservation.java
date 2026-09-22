@@ -36,6 +36,8 @@ public class Reservation extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime reservationDate;
 
+    private LocalDateTime readyAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReservationStatus status;

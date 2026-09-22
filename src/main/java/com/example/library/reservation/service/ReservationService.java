@@ -24,6 +24,8 @@ public interface ReservationService {
 
     Optional<Reservation> promoteNextInQueue(Book book);
 
+    int expireStaleReadyReservations();
+
     void fulfillReservation(Long bookId, Long memberId);
 
     boolean hasReadyReservation(Long bookId, Long memberId);

@@ -15,6 +15,7 @@ import com.example.library.reservation.entity.Reservation;
 import com.example.library.reservation.entity.ReservationStatus;
 import com.example.library.reservation.mapper.ReservationMapper;
 import com.example.library.reservation.repository.ReservationRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -36,15 +37,18 @@ public class ReservationServiceImpl implements ReservationService {
     private final BookService bookService;
     private final MemberService memberService;
     private final ReservationMapper reservationMapper;
+    private final int holdExpiryDays;
 
     public ReservationServiceImpl(ReservationRepository reservationRepository,
                                   BookService bookService,
                                   MemberService memberService,
-                                  ReservationMapper reservationMapper) {
+                                  ReservationMapper reservationMapper,
+                                  @Value("${app.reservation.hold-expiry-days:3}") int holdExpiryDays) {
         this.reservationRepository = reservationRepository;
         this.bookService = bookService;
         this.memberService = memberService;
         this.reservationMapper = reservationMapper;
+        this.holdExpiryDays = holdExpiryDays;
     }
 
     @Override
@@ -168,10 +172,32 @@ public class ReservationServiceImpl implements ReservationService {
 
         nextReservation.ifPresent(reservation -> {
             reservation.setStatus(READY);
+            reservation.setReadyAt(LocalDateTime.now());
             reservationRepository.save(reservation);
         });
 
         return nextReservation;
+    }
+
+    @Override
+    @Audited(action = "RESERVATION_EXPIRE_HOLD")
+    public int expireStaleReadyReservations() {
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(holdExpiryDays);
+        List<Reservation> staleReservations =
+                reservationRepository.findByStatusAndReadyAtBefore(READY, cutoff);
+
+        for (Reservation reservation : staleReservations) {
+            reservation.setStatus(ReservationStatus.CANCELLED);
+            Reservation expiredReservation = reservationRepository.save(reservation);
+
+            Book book = expiredReservation.getBook();
+            Optional<Reservation> next = promoteNextInQueue(book);
+            if (next.isEmpty()) {
+                bookService.markAsAvailable(book.getId());
+            }
+        }
+
+        return staleReservations.size();
     }
 
     @Override
