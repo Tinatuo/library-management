@@ -1,4 +1,4 @@
-﻿package com.example.library.common.aop;
+package com.example.library.common.aop;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

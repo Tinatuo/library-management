@@ -4,6 +4,7 @@ import com.example.library.common.dto.PageResponseDto;
 import com.example.library.member.dto.MemberRequestDto;
 import com.example.library.member.dto.MemberResponseDto;
 import com.example.library.member.service.MemberService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/members")
+@Tag(name = "Members", description = "Library member management")
 public class MemberController {
 
     private final MemberService memberService;

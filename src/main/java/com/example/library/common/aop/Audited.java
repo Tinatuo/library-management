@@ -1,4 +1,4 @@
-﻿package com.example.library.common.aop;
+package com.example.library.common.aop;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

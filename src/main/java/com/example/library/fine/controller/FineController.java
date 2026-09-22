@@ -4,6 +4,7 @@ import com.example.library.common.dto.PageResponseDto;
 import com.example.library.fine.dto.FineResponseDto;
 import com.example.library.fine.dto.FineSummaryDto;
 import com.example.library.fine.service.FineService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/fines")
+@Tag(name = "Fines", description = "Late-return fines")
 public class FineController {
 
     private final FineService fineService;

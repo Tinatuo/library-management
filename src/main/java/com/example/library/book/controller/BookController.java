@@ -6,6 +6,7 @@ import com.example.library.book.dto.BookResponseDto;
 import com.example.library.book.service.BookService;
 import com.example.library.book.service.BookServiceImpl;
 import com.example.library.common.dto.PageResponseDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/books")
+@Tag(name = "Books", description = "Book catalog management and cover images")
 public class BookController {
 
     private final BookService bookService;

@@ -4,6 +4,7 @@ import com.example.library.common.dto.PageResponseDto;
 import com.example.library.loan.dto.LoanRequestDto;
 import com.example.library.loan.dto.LoanResponseDto;
 import com.example.library.loan.service.LoanService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/loans")
+@Tag(name = "Loans", description = "Borrowing, returning, and renewing books")
 public class LoanController {
 
     private final LoanService loanService;
